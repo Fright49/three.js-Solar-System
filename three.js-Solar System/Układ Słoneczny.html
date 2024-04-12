@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Układ słoneczny Mikołaj Pura</title>
+  <style type="text/css">
+  	body { margin: 0; overflow: hidden; }
+  	canvas { width: 100%; height: 100%; }
+  </style>
+  </head>
+  <body>
+    <div id="name" style="position: absolute; bottom: 10px; left: 20px;"></div>
+    <style>
+      div {
+        color: white;
+        font-size: 40px;
+        opacity: 0.5;
+        border-radius: 25px;
+        background: gray;
+        padding: 20px; 
+  
+      }
+    </style>
+
+    <button id="orbitabtn" style="position: absolute; top: 10px; right: 10px;">Turn on/Turn off orbits</button>
+    <button id="start/stop" style="position: absolute; top: 10px; right: 180px;">Stop/Resume animation</button>
+    <select id="planetList" style="position: absolute; top: 10px; left: 10px">
+      <option value="Sun">Sun</option>
+      <option value="Mercury">Mercury</option>
+      <option value="Venus">Venus</option>
+      <option value="Earth">Earth</option>
+      <option value="Mars">Mars</option>
+      <option value="Jupiter">Jupiter</option>
+      <option value="Saturn">Saturn</option>
+      <option value="Uranus">Uranus</option>
+      <option value="Neptune">Neptune</option>
+    </select>
+    
+    <script>
+    const planetList = document.getElementById("planetList");
+    planetList.addEventListener("change", function() {
+      switch (this.value) {
+        case "Sun":
+        camera.position.set(10,22,1000);
+          break;
+        case "Mercury":
+          camera.position.set(10, 22, 1700);
+          break;
+        case "Venus":
+          camera.position.set(10, 22, 2400);
+          break;
+          case "Earth":
+          camera.position.set(10, 22, 3500);
+          break;
+          case "Mars":
+          camera.position.set(10, 22, 6000);
+          break;
+          case "Jupiter":
+          camera.position.set(10, 22, 8500);
+          break;
+          case "Saturn":
+          camera.position.set(10, 22, 13000);
+          break;
+          case "Uranus":
+          camera.position.set(10, 22, 17000);
+          break;
+          case "Neptune":
+          camera.position.set(10, 22, 20000);
+          break;
+       
+      }
+    });
+    </script>
+    
+ 
+  <script type="text/javascript" src="js/three.js"></script>
+  <script type="text/javascript" src="js/OrbitControls.js"></script>
+  <script>
+     const scene = new THREE.Scene();
+  scene.background = new THREE.Color( 0x21130d );
+  const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 1, 1000000 );
+  camera.position.set( 10, 22, 3000 );
+  
+  
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  document.getElementsByTagName('body')[0].appendChild( renderer.domElement );
+  
+  const controls = new THREE.OrbitControls( camera, renderer.domElement );
+  
+  controls.enableDamping = true; 
+  controls.dampingFactor = 0.03;
+  controls.update();
+  
+ 
+
+  //wlaczenie cieni
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  
+  //swiatlo
+  
+  // add ambient light
+  const ambientLight = new THREE.AmbientLight( 0x222222 ) ;
+  scene.add( ambientLight );
+  
+  // add spotlight for the shadows
+  const PointLight = new THREE.PointLight( 0xffffff );
+  scene.add( PointLight );
+  
+  //skybox
+  let materialArray = []
+  
+  /*const ft = new THREE.TextureLoader().load("texture/white.jpg");
+  const bk = new THREE.TextureLoader().load("texture/white.jpg");
+  const up = new THREE.TextureLoader().load("texture/white.jpg");
+  const dn = new THREE.TextureLoader().load("texture/white.jpg");
+  const rt = new THREE.TextureLoader().load("texture/white.jpg");
+  const lf = new THREE.TextureLoader().load("texture/white.jpg");
+*/
+  const ft = new THREE.TextureLoader().load("skybox/right.png");
+  const bk = new THREE.TextureLoader().load("skybox/left.png");
+  const up = new THREE.TextureLoader().load("skybox/top.png");
+  const dn = new THREE.TextureLoader().load("skybox/bottom.png");
+  const rt = new THREE.TextureLoader().load("skybox/front.png");
+  const lf = new THREE.TextureLoader().load("skybox/back.png");
+  
+  materialArray.push(new THREE.MeshBasicMaterial( { map: ft }));
+  materialArray.push(new THREE.MeshBasicMaterial( { map: bk }));
+  materialArray.push(new THREE.MeshBasicMaterial( { map: up }));
+  materialArray.push(new THREE.MeshBasicMaterial( { map: dn }));
+  materialArray.push(new THREE.MeshBasicMaterial( { map: rt }));
+  materialArray.push(new THREE.MeshBasicMaterial( { map: lf }));
+  
+  for (let i = 0; i < 6; i++)
+    materialArray[i].side = THREE.BackSide;
+  
+  const skyboxGeo = new THREE.BoxGeometry(100000, 100000, 100000);
+  const skybox = new THREE.Mesh(skyboxGeo,materialArray);
+  scene.add(skybox);
+     
+  //grupa orbit
+ const Orbity = new THREE.Group();
+ scene.add(Orbity);
+
+ 
+
+ 
+  //slonce
+  const geometrysun = new THREE.SphereGeometry( 500, 32, 32 );
+  const sunTexture= new THREE.TextureLoader().load('texture/sun.jpg');
+  
+  const materialsun = new THREE.MeshBasicMaterial({
+    map:sunTexture,
+   blending: THREE.SubstractiveBlending
+  })
+  sunTexture.map=sunTexture;
+  const sun = new THREE.Mesh( geometrysun, materialsun );
+  
+  scene.add(sun);
+  sun.position.set(150,0,0);
+  sun.castShadow=true;
+  
+  
+  var sunL = new THREE.PointLight( 0xffffff, 1, 1000 );
+        sunL.castShadow = true;
+        sun.add( sunL );
+  
+  //merkury
+  const geometrymercury = new THREE.SphereGeometry( 20, 32, 32 );
+  const mercuryTexture= new THREE.TextureLoader().load('texture/mercury.jpg');
+  const materialmercury = new THREE.MeshStandardMaterial({
+    map:mercuryTexture
+  })
+  mercuryTexture.map=mercuryTexture;
+  
+  const mercury = new THREE.Mesh( geometrymercury, materialmercury );
+  mercury.castShadow=true;
+  mercury.receiveShadow=true;
+  mercury.position.set(1000,0,0);
+  const mercurygroup = new THREE.Group();
+  mercurygroup.add( mercury );
+  scene.add(mercurygroup);
+  
+var linia = 5;
+
+  //orbita merkury
+  const geometryorbita = new THREE.TorusGeometry( 1000, linia, 30,200 );
+const materialoribta = new THREE.MeshBasicMaterial( { color: 'white', side: THREE.DoubleSide } );
+const oribtaM = new THREE.Mesh( geometryorbita, materialoribta );
+oribtaM.rotation.x=Math.PI / 2;
+Orbity.add( oribtaM );
+  
+  //venus
+  const geometryvenus = new THREE.SphereGeometry( 40, 32, 32 );
+  const venusTexture= new THREE.TextureLoader().load('texture/venus.jpg');
+  const materialvenus = new THREE.MeshStandardMaterial({
+    map:venusTexture
+  })
+  venusTexture.map=venusTexture;
+  const venus = new THREE.Mesh( geometryvenus, materialvenus );
+  venus.receiveShadow=true;
+  venus.castShadow=true;
+ venus.position.set(1700,0,0);
+ const venusgroup= new THREE.Group();
+ venusgroup.add( venus );
+  scene.add(venusgroup);
+  venusgroup.position.set(200,0,0);
+  
+  //orbita wenus
+  const geometryorbita2 = new THREE.TorusGeometry( 1700, linia, 30,200 );
+const oribtaM2 = new THREE.Mesh( geometryorbita2, materialoribta );
+oribtaM2.rotation.x=Math.PI / 2;
+Orbity.add( oribtaM2 );
+oribtaM2.position.set(200,0,0);
+  
+  
+
+  
+  
+  //ziemia
+  const geometryearth = new THREE.SphereGeometry( 45, 32, 32 );
+  const earthTexture= new THREE.TextureLoader().load('texture/earth.jpg');
+  const materialearth = new THREE.MeshStandardMaterial({
+    map:earthTexture
+  })
+  earthTexture.map=earthTexture;
+  const earth = new THREE.Mesh( geometryearth, materialearth );
+  earth.castShadow=true;
+  earth.receiveShadow=true;
+ 
+  
+  //ksiezyc
+  const geometryMoon = new THREE.SphereGeometry( 10, 32, 32 );
+  const MoonTexture= new THREE.TextureLoader().load('texture/moon.jpg');
+  const materialMoon = new THREE.MeshStandardMaterial({
+    map:MoonTexture
+  })
+  MoonTexture.map=MoonTexture;
+  const moon = new THREE.Mesh( geometryMoon, materialMoon);
+  moon.castShadow=true;
+  moon.receiveShadow=true;
+  moon.position.set(100,0,0);
+ 
+  const cmoon = new THREE.Group();
+  cmoon.add(earth);
+  cmoon.add(moon);
+
+  cmoon.position.set(2400,0,0);
+  
+  const MIH = new THREE.Group();
+  MIH.add(cmoon);
+  scene.add(MIH);
+
+  /////
+  const geometryorbita3 = new THREE.TorusGeometry( 2400, linia, 30,200 );
+  const oribtaM3 = new THREE.Mesh( geometryorbita3, materialoribta );
+  oribtaM3.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM3 );
+  oribtaM3.position.set(200,0,0);
+  MIH.position.set(200,0,0);
+  
+  
+  //mars
+  const geometrymars = new THREE.SphereGeometry( 25, 32, 32 );
+  const marsTexture= new THREE.TextureLoader().load('texture/mars.jfif');
+  const materialmars= new THREE.MeshStandardMaterial({
+    map:marsTexture
+  })
+  marsTexture.map=marsTexture;
+  const mars = new THREE.Mesh( geometrymars, materialmars );
+  mars.castShadow=true;
+  mars.receiveShadow=true;
+  const marsgroup = new THREE.Group();
+  marsgroup.add(mars);
+  scene.add(marsgroup);
+  mars.position.set(3500,0,0);
+  
+  const geometryorbita4 = new THREE.TorusGeometry( 3500, linia, 30,200 );
+  const oribtaM4 = new THREE.Mesh( geometryorbita4, materialoribta );
+  oribtaM4.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM4 );
+  oribtaM4.position.set(-100,0,-300);
+  marsgroup.position.set(-100,0,-300);
+    
+
+
+
+  //jowisz
+  const geometryjupiter = new THREE.SphereGeometry( 200, 32, 32 );
+  const jupiterTexture= new THREE.TextureLoader().load('texture/jowisz.jpg');
+  const materialjupiter= new THREE.MeshStandardMaterial({
+    map:jupiterTexture
+  })
+  jupiterTexture.map=jupiterTexture;
+  const jupiter = new THREE.Mesh( geometryjupiter, materialjupiter );
+  jupiter.castShadow=true;
+  jupiter.receiveShadow=true;
+  const jupitergroup= new THREE.Group();
+  jupitergroup.add(jupiter);
+  scene.add(jupitergroup);
+  jupiter.position.set(6000,0,0);
+  
+  const geometryorbita5 = new THREE.TorusGeometry( 6000, linia, 30,200 );
+  const oribtaM5 = new THREE.Mesh( geometryorbita5, materialoribta );
+  oribtaM5.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM5 );
+  
+  //saturn
+  const geometrysaturn = new THREE.SphereGeometry( 180, 32, 32 );
+  const saturnTexture= new THREE.TextureLoader().load('texture/saturn.jpg');
+  const materialsaturn= new THREE.MeshStandardMaterial({
+    map:saturnTexture
+  })
+  saturnTexture.map=saturnTexture;
+  const saturn = new THREE.Mesh( geometrysaturn, materialsaturn );
+  saturn.castShadow=true;
+  saturn.receiveShadow=true;
+
+  saturn.position.set(8500,0,0);
+  const saturngroup = new THREE.Group();
+  saturngroup.add( saturn );
+  scene.add( saturngroup );
+
+  
+  const geometryorbita6 = new THREE.TorusGeometry( 8500, linia, 30,200 );
+  const oribtaM6 = new THREE.Mesh( geometryorbita6, materialoribta );
+  oribtaM6.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM6 );
+  
+  
+  
+  //pierscienie saturna
+  const geometryPierscien = new THREE.TorusGeometry( 250, 15,2,200);
+  const PierscienTexture=new THREE.TextureLoader().load('texture/ring2.jpg');
+  const materialPierscien = new THREE.MeshStandardMaterial({
+    map:PierscienTexture
+  })
+  PierscienTexture.map=PierscienTexture;
+  const Pierscien = new THREE.Mesh( geometryPierscien, materialPierscien );
+  Pierscien.rotation.x=1;
+  Pierscien.castShadow=true;
+  Pierscien.receiveShadow=true;
+  Pierscien.position.set(8500,0,0);
+  const Piersciengroup = new THREE.Group();
+  Piersciengroup.add(Pierscien);
+  scene.add(Piersciengroup);
+  
+
+
+  
+  //uran
+  const geometryUran = new THREE.SphereGeometry( 120, 32, 32 );
+  const UranTexture= new THREE.TextureLoader().load('texture/uran.jpg');
+  const materialUran= new THREE.MeshStandardMaterial({
+    map:UranTexture
+  })
+  UranTexture.map=UranTexture;
+  const uran = new THREE.Mesh( geometryUran, materialUran );
+  uran.castShadow=true;
+  uran.receiveShadow=true;
+
+  const urang= new THREE.Group();
+  urang.add(uran);
+  scene.add(urang);
+  uran.position.set(13000,0,0);
+
+  const geometryorbita7 = new THREE.TorusGeometry( 13000, linia, 30,200 );
+  const oribtaM7 = new THREE.Mesh( geometryorbita7, materialoribta );
+  oribtaM7.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM7 );
+  
+  //neptun
+  const geometryNeptun = new THREE.SphereGeometry( 110, 32, 32 );
+  const NeptunTexture= new THREE.TextureLoader().load('texture/neptun.jpg');
+  const materialNeptun= new THREE.MeshStandardMaterial({
+    map:NeptunTexture
+  })
+  NeptunTexture.map=NeptunTexture;
+  const neptun = new THREE.Mesh( geometryNeptun, materialNeptun );
+  neptun.castShadow=true;
+  neptun.receiveShadow=true;
+  const neptung = new THREE.Group();
+  neptung.add(neptun);
+  scene.add(neptung);
+  neptun.position.set(18000,0,0);
+  
+  const geometryorbita8 = new THREE.TorusGeometry( 18000, linia, 30,200 );
+  const oribtaM8 = new THREE.Mesh( geometryorbita8, materialoribta );
+  oribtaM8.rotation.x=Math.PI / 2;
+  Orbity.add( oribtaM8 );
+  
+
+  //wlacz wylacz oribty
+  var toggleorbitBtn = document.getElementById('orbitabtn');
+      toggleorbitBtn.addEventListener('click', function() {
+       
+        Orbity.visible = !Orbity.visible;
+
+      });
+
+      //wznow wylacz animacje 
+    var running=true;
+      var Startstopbtn = document.getElementById('start/stop');
+      Startstopbtn.addEventListener('click', function() {
+        running = !running;
+        if (running) {
+          requestAnimationFrame(render);
+        }
+
+      });
+
+      ///
+
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
+
+      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+      function onDocumentMouseMove( event ) {
+        event.preventDefault();
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        raycaster.setFromCamera( mouse, camera );
+        var intersects = raycaster.intersectObjects( scene.children );
+        if ( intersects.length > 0 ) {
+            if ( intersects[0].object === sun ) {
+              document.getElementById( "name" ).innerHTML = "Sun";
+            }else if ( intersects[0].object === mercury ) {
+              document.getElementById( "name" ).innerHTML = "Mercury";
+            } 
+            else if ( intersects[0].object === venus ) {
+              document.getElementById( "name" ).innerHTML = "Venus";
+            } 
+            else if ( intersects[0].object === earth ) {
+              document.getElementById( "name" ).innerHTML = "Earth";
+            } 
+            else if ( intersects[0].object === mars ) {
+              document.getElementById( "name" ).innerHTML = "Mars";
+            } 
+            else if ( intersects[0].object === jupiter ) {
+              document.getElementById( "name" ).innerHTML = "Jupiter";
+            } 
+            else if ( intersects[0].object === saturn ) {
+              document.getElementById( "name" ).innerHTML = "Saturn";
+            } 
+            else if ( intersects[0].object === uran ) {
+              document.getElementById( "name" ).innerHTML = "Uranus";
+            } 
+            else if ( intersects[0].object === neptun ) {
+              document.getElementById( "name" ).innerHTML = "Neptune";
+            } 
+            else if ( intersects[0].object === moon ) {
+              document.getElementById( "name" ).innerHTML = "Moon";
+            } 
+             else {
+              document.getElementById( "name" ).innerHTML = "";
+            }
+          } else {
+            document.getElementById( "name" ).innerHTML = "";
+          }
+      }
+
+
+
+
+  function render(){
+
+    if(running){
+    sun.rotation.y+=0.001;
+    mercury.rotation.y-=0.01;
+    mercurygroup.rotation.y+=0.03;
+    venus.rotation.y+=0.001;
+    venusgroup.rotation.y+=0.015;
+    earth.rotation.y-=0.01;
+    MIH.rotation.y+=0.010;
+    cmoon.rotation.y+=0.01;
+    mars.rotation.y-=0.01;
+    marsgroup.rotation.y+=0.005;
+    jupiter.rotation.y-=0.01;
+    jupitergroup.rotation.y+=0.001;
+    saturn.rotation.y-=0.01;
+    saturngroup.rotation.y+=0.0005;
+    Piersciengroup.rotation.y+=0.0005;
+    uran.rotation.y-=0.01;
+    urang.rotation.y+=0.00008;
+    neptun.rotation.y-=0.01;
+    neptung.rotation.y+=0.00005;
+    requestAnimationFrame(render);
+    }
+    controls.update()
+    
+  }
+
+  // aktualizacja OrbitControls.js
+  function animate() {
+    requestAnimationFrame( animate );
+    controls.update();
+    renderer.render( scene, camera );
+  
+  }
+  
+  animate();
+  render();
+  
+  // zmiana rozmiaru okna
+  window.addEventListener(
+    'resize',
+    function() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.render( scene, camera );
+    },
+    false
+  );
+</script>
+  </body>
+</html>
